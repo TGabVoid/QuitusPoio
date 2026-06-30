@@ -366,7 +366,7 @@ body {
 }
 
 .flyer-pair-hidden {
-  display: none !important;
+  /* controlado via JS con style.display */
 }
 
 .flyer-frame img.is-transitioning {

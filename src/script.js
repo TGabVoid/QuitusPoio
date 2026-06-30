@@ -366,13 +366,18 @@ function setFlyer(index, animate = true) {
   if (!flyers.length || !flyerImage) return;
   flyerIndex = Math.max(0, Math.min(index, flyers.length - 1));
 
-  const url = flyers[flyerIndex] || null;
+  const urlLeft = flyers[flyerIndex] || null;
+  // En escritorio, mostrar también el siguiente flyer a la derecha (pares consecutivos)
+  const urlRight = (!isMobileLayout() && flyerIndex + 1 < flyers.length) ? (flyers[flyerIndex + 1] || null) : null;
 
   const applyImage = () => {
-    flyerImage.src = url || '';
-    flyerImage.classList.toggle('flyer-pair-hidden', !url);
-    // Siempre ocultar la segunda imagen
-    if (flyerImage2) {
+    flyerImage.src = urlLeft || '';
+    flyerImage.classList.toggle('flyer-pair-hidden', !urlLeft);
+
+    if (urlRight && flyerImage2) {
+      flyerImage2.src = urlRight;
+      flyerImage2.classList.remove('flyer-pair-hidden');
+    } else if (flyerImage2) {
       flyerImage2.removeAttribute("src");
       flyerImage2.classList.add('flyer-pair-hidden');
     }
@@ -390,6 +395,7 @@ function setFlyer(index, animate = true) {
   void flyerImage.offsetWidth;
   flyerFrame?.classList.add('is-transitioning');
   flyerImage.classList.add('is-transitioning');
+  if (flyerImage2) flyerImage2.classList.add('is-transitioning');
 
   setTimeout(() => {
     applyImage();
@@ -398,6 +404,7 @@ function setFlyer(index, animate = true) {
   setTimeout(() => {
     flyerFrame?.classList.remove('is-transitioning');
     flyerImage.classList.remove('is-transitioning');
+    if (flyerImage2) flyerImage2.classList.remove('is-transitioning');
   }, timings.flyerSwitch);
 }
 

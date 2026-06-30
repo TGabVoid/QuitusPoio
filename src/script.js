@@ -30,7 +30,7 @@ let flyerTimer = null;
 let progressTimer = null;
 let inVip = false;
 let vipReady = false;
-let flyerIndex = 0; // índice de SECCIÓN (cada sección = 2 flyers)
+let flyerIndex = 0;
 let flyers = [];
 
 let isTauri = false;
@@ -94,9 +94,7 @@ window.addEventListener("unhandledrejection", (event) => {
   logDebug(`Promise rejection: ${event.reason}`, "error");
 });
 
-// Diagnóstico: útil para confirmar en runtime qué ruta está usando el .exe
 async function logFlyersPathIfTauri() {
-  // get_flyers_path no está implementado en el backend, omitir silenciosamente
   return;
 }
 
@@ -142,10 +140,19 @@ function playTransition() {
   setTimeout(() => transitionOverlay.classList.remove("is-active"), timings.transition + 40);
 }
 
+function resetFlyersAndCarousel() {
+  flyers = [];
+  flyerIndex = 0;
+  vipReady = false;
+  if (flyerImage) flyerImage.removeAttribute("src");
+  if (flyerImage2) flyerImage2.removeAttribute("src");
+}
+
 function showIdle() {
   inVip = false;
   vipReady = false;
   clearTimers();
+  resetFlyersAndCarousel();
 
   vipScreen?.classList.remove("is-active");
   vipScreen?.setAttribute("aria-hidden", "true");
@@ -169,7 +176,6 @@ function showVip() {
 }
 
 function naturalFlyerSort(a, b) {
-  // Ordena flyer2 antes que flyer10
   const ax = a.match(/(\d+)/);
   const bx = b.match(/(\d+)/);
   const an = ax ? Number(ax[1]) : Number.POSITIVE_INFINITY;
@@ -212,7 +218,6 @@ function canLoadImage(src, timeoutMs = 2500) {
       clearTimeout(timer);
       finish(false);
     };
-    // No añadir cache-buster a data URIs, las rompe
     if (src && src.startsWith('data:')) {
       img.src = src;
     } else {
@@ -232,8 +237,6 @@ async function verifyFlyers(list) {
 }
 
 async function loadFlyers() {
-  // En TAURI: la fuente de verdad es SIEMPRE list_flyers() (carpeta externa en AppData).
-  // No hacemos fallback a assets internos, porque eso confunde cuando quisiste dejar solo 1-2 flyers.
   if (isTauri) {
     logDebug("Modo Tauri detectado");
     await logFlyersPathIfTauri();
@@ -242,7 +245,6 @@ async function loadFlyers() {
     const clean = Array.isArray(tauriList) ? tauriList.filter(Boolean) : [];
     logDebug(`list_flyers() devolvio ${clean.length} item(s)`);
 
-    // Si el backend devuelve data URIs (base64), usarlas directamente SIN convertFileSrc
     const allAreDataUris = clean.length > 0 && clean.every((p) => p.startsWith('data:'));
     let converted = clean;
     if (!allAreDataUris) {
@@ -263,8 +265,8 @@ async function loadFlyers() {
       logDebug("Flyers son data URIs, usando directamente sin convertFileSrc");
     }
 
-    // Maximo 5
-    flyers = converted.slice(0, 5);
+    // Sin límite — todos los flyers disponibles
+    flyers = clean;
 
     logDebug(`Flyers finales: ${flyers.length}`);
     await verifyFlyers(flyers);
@@ -273,10 +275,6 @@ async function loadFlyers() {
   }
 
   logDebug("Modo navegador (no Tauri)");
-
-  // Sin backend no podemos “listar” carpetas en el navegador.
-  // Solución robusta: intenta un manifest generado (flyers.json). Si no existe,
-  // cae a un set por defecto (flyer1..flyerN) y se queda con los que de verdad cargan.
 
   const candidatesFromJson = await fetch("assets/flyers/flyers.json", { cache: "no-store" })
     .then((r) => (r.ok ? r.json() : null))
@@ -297,7 +295,7 @@ async function loadFlyers() {
     return filtered;
   }
 
-  // Fallback: prueba nombres comunes hasta max.
+  // Fallback
   const exts = ["jpg", "jpeg", "png", "webp"];
   const max = 12;
   const candidates = [];
@@ -312,7 +310,6 @@ async function loadFlyers() {
     if (ok) existing.push(path);
   }
 
-  // Si no encuentra nada, como mínimo intenta flyer2.jpg
   if (!existing.length) {
     const fallback = "assets/flyers/flyer2.jpg";
     if (await canLoadImage(fallback)) return [fallback];
@@ -321,56 +318,73 @@ async function loadFlyers() {
   return existing.sort(naturalFlyerSort);
 }
 
-function buildProgress() {
-  if (!vipProgress) return;
-  vipProgress.innerHTML = "";
-  const sections = totalSections();
-  vipProgress.classList.toggle("single", sections === 1);
-
-  for (let i = 0; i < sections; i++) {
-    const segment = document.createElement("div");
-    segment.className = "vip-progress-segment";
-    segment.style.setProperty("--segment-duration", `${timings.flyerDuration}ms`);
-    segment.dataset.index = String(i);
-    vipProgress.appendChild(segment);
-  }
-}
-
-function paintProgress() {
-  if (!vipProgress) return;
-  const segments = Array.from(vipProgress.querySelectorAll(".vip-progress-segment"));
-  segments.forEach((segment, index) => {
-    segment.classList.remove("is-active", "is-done");
-    if (index < flyerIndex) segment.classList.add("is-done");
-    if (index === flyerIndex) segment.classList.add("is-active");
-  });
-}
+// ─── Detección de layout ───
 
 function isMobileLayout() {
   return window.innerWidth <= 600;
 }
 
-function totalSections() {
-  if (isMobileLayout()) {
-    return flyers.length;
-  }
-  return Math.ceil(flyers.length / 2);
+function usePairLayout() {
+  // Pares (2 flyers lado a lado) solo en escritorio con más de 5 flyers
+  return !isMobileLayout() && flyers.length > 5;
 }
+
+function totalSections() {
+  if (usePairLayout()) {
+    return Math.ceil(flyers.length / 2);
+  }
+  return flyers.length;
+}
+
+// ─── Indicador de dots ───
+
+function buildProgress() {
+  if (!vipProgress) return;
+  vipProgress.innerHTML = "";
+  const sections = totalSections();
+  vipProgress.className = "vip-progress vip-progress-dots";
+  if (sections <= 1) vipProgress.classList.add("single");
+
+  for (let i = 0; i < sections; i++) {
+    const dot = document.createElement("button");
+    dot.className = "vip-progress-dot";
+    dot.setAttribute("aria-label", "Sección " + (i + 1));
+    dot.dataset.index = String(i);
+    dot.addEventListener("click", () => {
+      if (!inVip || !vipReady) return;
+      clearTimers();
+      setFlyer(i, true);
+      paintProgress();
+      scheduleFlyerAuto();
+      setStatus("Navegación VIP manual");
+    });
+    vipProgress.appendChild(dot);
+  }
+}
+
+function paintProgress() {
+  if (!vipProgress) return;
+  const dots = Array.from(vipProgress.querySelectorAll(".vip-progress-dot"));
+  dots.forEach((dot, index) => {
+    dot.classList.remove("is-active", "is-done");
+    if (index < flyerIndex) dot.classList.add("is-done");
+    if (index === flyerIndex) dot.classList.add("is-active");
+  });
+}
+
+// ─── Seteo de flyers ───
 
 function setFlyer(index, animate = true) {
   if (!flyers.length || !flyerImage) return;
   flyerIndex = Math.max(0, Math.min(index, totalSections() - 1));
 
-  const mobile = isMobileLayout();
-  const url1 = mobile ? (flyers[flyerIndex] || null) : (flyers[flyerIndex * 2] || null);
-  const url2 = mobile ? null : (flyers[flyerIndex * 2 + 1] || null);
+  const pairs = usePairLayout();
+  const url1 = pairs ? (flyers[flyerIndex * 2] || null) : (flyers[flyerIndex] || null);
+  const url2 = pairs ? (flyers[flyerIndex * 2 + 1] || null) : null;
 
   const applyPair = () => {
-    if (mobile) {
-      flyerImage.src = url1 || '';
-      flyerImage.classList.toggle('flyer-pair-hidden', !url1);
-      flyerImage2.classList.add('flyer-pair-hidden');
-    } else {
+    if (pairs) {
+      // Escritorio con >5 flyers: 2 imágenes lado a lado
       if (url1) {
         flyerImage.src = url1;
         flyerImage.classList.remove('flyer-pair-hidden');
@@ -383,6 +397,11 @@ function setFlyer(index, animate = true) {
       } else {
         flyerImage2.classList.add('flyer-pair-hidden');
       }
+    } else {
+      // 1 flyer centrado (móvil o ≤5 flyers en escritorio)
+      flyerImage.src = url1 || '';
+      flyerImage.classList.toggle('flyer-pair-hidden', !url1);
+      flyerImage2.classList.add('flyer-pair-hidden');
     }
   };
 
@@ -430,14 +449,10 @@ function scheduleFlyerAuto() {
   }, timings.flyerDuration);
 }
 
+// ─── Navegación ───
+
 function advanceFlyer(manual = false) {
   if (!inVip || !vipReady) return;
-
-  // En móvil: si solo hay 1 flyer, cierra el ciclo
-  if (isMobileLayout() && flyers.length <= 1) {
-    endVipCycle();
-    return;
-  }
 
   if (totalSections() <= 1) {
     endVipCycle();
@@ -521,22 +536,10 @@ function forceBackToIdle() {
   }, timings.transition - 80);
 }
 
-function rebindMobileClick() {
-  // Re-aplica lógica móvil si cambia orientación
-  if (flyerFrame) {
-    flyerFrame.style.cursor = "pointer";
-  }
-  if (flyerImage) {
-    flyerImage.style.cursor = "pointer";
-  }
-  if (flyerImage2) {
-    flyerImage2.style.cursor = "pointer";
-  }
-}
+// ─── Event listeners ───
 
 window.addEventListener("resize", () => {
   if (inVip && vipReady) {
-    // Reconstruye progress y vuelve a la posición actual
     const currentIdx = flyerIndex;
     buildProgress();
     setFlyer(currentIdx, false);

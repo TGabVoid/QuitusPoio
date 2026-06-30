@@ -232,43 +232,59 @@ body {
   letter-spacing: 0.22em;
 }
 
+/* Indicador de dots */
 .vip-progress {
-  width: min(92vw, 1260px);
-  height: 12px;
+  width: auto;
+  max-width: min(92vw, 1260px);
   margin: 8px auto 16px;
-  border-radius: 999px;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(168, 138, 74, 0.28);
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.26), 0 8px 20px rgba(0, 0, 0, 0.22), 0 0 22px rgba(168, 138, 74, 0.16);
-  display: grid;
-  grid-auto-flow: column;
-  gap: 6px;
-  padding: 2px 3px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px;
+  background: none;
+  border: none;
+  box-shadow: none;
+  overflow: visible;
 }
-
 .vip-progress.single { gap: 0; }
 
-.vip-progress-segment {
-  --segment-duration: 30s;
-  position: relative;
-  border-radius: 999px;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.08);
+.vip-progress-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba(168, 138, 74, 0.45);
+  background: rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  transition: background 320ms ease, border-color 320ms ease, transform 260ms ease, box-shadow 320ms ease;
+  padding: 0;
+  outline: none;
+  flex-shrink: 0;
+}
+.vip-progress-dot:hover {
+  border-color: rgba(216, 189, 134, 0.7);
+  background: rgba(216, 189, 134, 0.15);
+  transform: scale(1.15);
+}
+.vip-progress-dot:focus-visible {
+  box-shadow: 0 0 0 3px rgba(216, 189, 134, 0.5);
 }
 
-.vip-progress-segment::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  transform-origin: left center;
-  transform: scaleX(0);
-  background: linear-gradient(90deg, #5f4724 0%, #a37c44 45%, #d8bd86 100%);
-  box-shadow: 0 0 16px rgba(216, 189, 134, 0.36);
+/* Dot activo (sección actual) */
+.vip-progress-dot.is-active {
+  background: linear-gradient(135deg, #a37c44, #d8bd86);
+  border-color: #d8bd86;
+  box-shadow: 0 0 14px rgba(216, 189, 134, 0.55);
+  transform: scale(1.22);
 }
 
-.vip-progress-segment.is-done::before { transform: scaleX(1); }
-.vip-progress-segment.is-active::before { animation: segmentFill var(--segment-duration) linear forwards; }
+/* Dot completado */
+.vip-progress-dot.is-done {
+  background: linear-gradient(135deg, #5f4724, #8f6b3a);
+  border-color: rgba(168, 138, 74, 0.7);
+  opacity: 0.85;
+}
 
 .vip-main {
   display: flex;

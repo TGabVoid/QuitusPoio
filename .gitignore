@@ -42,3 +42,9 @@ Icon
 
 # Package lock (keep lockfile for reproducible builds)
 # package-lock.json is intentionally committed
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example

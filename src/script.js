@@ -346,7 +346,14 @@ function paintProgress() {
   });
 }
 
+function isMobileLayout() {
+  return window.innerWidth <= 600;
+}
+
 function totalSections() {
+  if (isMobileLayout()) {
+    return flyers.length;
+  }
   return Math.ceil(flyers.length / 2);
 }
 
@@ -354,23 +361,28 @@ function setFlyer(index, animate = true) {
   if (!flyers.length || !flyerImage) return;
   flyerIndex = Math.max(0, Math.min(index, totalSections() - 1));
 
-  const url1 = flyers[flyerIndex * 2] || null;
-  const url2 = flyers[flyerIndex * 2 + 1] || null;
+  const mobile = isMobileLayout();
+  const url1 = mobile ? (flyers[flyerIndex] || null) : (flyers[flyerIndex * 2] || null);
+  const url2 = mobile ? null : (flyers[flyerIndex * 2 + 1] || null);
 
   const applyPair = () => {
-    // imagen 1 siempre visible si existe
-    if (url1) {
-      flyerImage.src = url1;
-      flyerImage.classList.remove('flyer-pair-hidden');
-    } else {
-      flyerImage.classList.add('flyer-pair-hidden');
-    }
-    // imagen 2 solo si hay par
-    if (url2) {
-      flyerImage2.src = url2;
-      flyerImage2.classList.remove('flyer-pair-hidden');
-    } else {
+    if (mobile) {
+      flyerImage.src = url1 || '';
+      flyerImage.classList.toggle('flyer-pair-hidden', !url1);
       flyerImage2.classList.add('flyer-pair-hidden');
+    } else {
+      if (url1) {
+        flyerImage.src = url1;
+        flyerImage.classList.remove('flyer-pair-hidden');
+      } else {
+        flyerImage.classList.add('flyer-pair-hidden');
+      }
+      if (url2) {
+        flyerImage2.src = url2;
+        flyerImage2.classList.remove('flyer-pair-hidden');
+      } else {
+        flyerImage2.classList.add('flyer-pair-hidden');
+      }
     }
   };
 
@@ -420,6 +432,12 @@ function scheduleFlyerAuto() {
 
 function advanceFlyer(manual = false) {
   if (!inVip || !vipReady) return;
+
+  // En móvil: si solo hay 1 flyer, cierra el ciclo
+  if (isMobileLayout() && flyers.length <= 1) {
+    endVipCycle();
+    return;
+  }
 
   if (totalSections() <= 1) {
     endVipCycle();
@@ -502,6 +520,29 @@ function forceBackToIdle() {
     showIdle();
   }, timings.transition - 80);
 }
+
+function rebindMobileClick() {
+  // Re-aplica lógica móvil si cambia orientación
+  if (flyerFrame) {
+    flyerFrame.style.cursor = "pointer";
+  }
+  if (flyerImage) {
+    flyerImage.style.cursor = "pointer";
+  }
+  if (flyerImage2) {
+    flyerImage2.style.cursor = "pointer";
+  }
+}
+
+window.addEventListener("resize", () => {
+  if (inVip && vipReady) {
+    // Reconstruye progress y vuelve a la posición actual
+    const currentIdx = flyerIndex;
+    buildProgress();
+    setFlyer(currentIdx, false);
+    paintProgress();
+  }
+});
 
 function startFlow() {
   if (nfcStatus) {

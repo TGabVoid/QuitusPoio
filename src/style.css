@@ -475,35 +475,36 @@ body {
   .status { font-size: 13px; padding: 10px 16px; }
 }
 
-/* Móvil: ≤600px — un solo flyer a la vez, progress bar por flyer individual */
+/* Móvil: ≤600px — un solo flyer centrado, progress bar por cada flyer */
 @media (max-width: 600px) {
-  .screen-idle { padding: clamp(12px, 2vh, 20px) clamp(12px, 2vw, 16px) clamp(12px, 1.5vh, 16px); }
-  .idle-content { padding: clamp(12px, 2vh, 20px) clamp(14px, 3vw, 24px); gap: clamp(8px, 1.2vh, 14px); }
-  .logo-hero { height: clamp(140px, 22vh, 220px); max-width: min(88vw, 400px); }
-  .idle-content h1 { font-size: clamp(18px, 6vw, 26px); letter-spacing: 0.1em; }
-  .idle-content p { font-size: clamp(10px, 2.8vw, 12px); letter-spacing: 0.1em; }
-  .status { font-size: 11px; padding: 6px 12px; letter-spacing: 0.12em; margin: 0 0 clamp(12px, 2vh, 18px); }
+  .screen-idle { padding: 12px; }
+  .idle-content { padding: 12px 16px; gap: 8px; }
+  .logo-hero { height: clamp(120px, 20vh, 180px); max-width: 85vw; }
+  .idle-content h1 { font-size: clamp(16px, 5vw, 22px); letter-spacing: 0.08em; }
+  .idle-content p { font-size: 10px; letter-spacing: 0.08em; }
+  .status { font-size: 10px; padding: 5px 10px; letter-spacing: 0.1em; margin: 0 0 10px; }
 
-  .screen-vip { padding: 6px 8px 14px; }
-  .vip-header { font-size: 12px; margin-top: 2px; margin-bottom: 3px; letter-spacing: 0.1em; }
-  .vip-progress { width: 100%; height: 5px; gap: 2px; padding: 1px; margin: 2px auto 6px; }
+  .screen-vip { padding: 4px 6px 10px; }
+  .vip-header { font-size: 11px; margin: 2px 0; letter-spacing: 0.08em; }
+  .vip-progress { width: 100%; height: 4px; gap: 2px; padding: 1px; margin: 2px auto 4px; }
   .flyer-frame {
     width: 100%;
-    height: min(55vh, 400px);
+    height: min(50vh, 350px);
     grid-template-columns: 1fr;
     grid-template-rows: 1fr;
     gap: 0;
   }
   .flyer-frame img { border-radius: 6px; }
-  .vip-hint { white-space: normal; max-width: 94vw; font-size: 9px; bottom: 6px; letter-spacing: 0.08em; line-height: 1.3; }
-  .vip-main { padding: 4px 0 2px; }
+  .vip-hint { white-space: normal; max-width: 92vw; font-size: 8px; bottom: 4px; letter-spacing: 0.06em; line-height: 1.2; }
+  .vip-main { padding: 2px 0; }
 }
 
-/* Ajuste para pantallas muy pequeñas (≤360px) */
+/* Ajuste pantallas muy pequeñas */
 @media (max-width: 360px) {
-  .logo-hero { height: clamp(100px, 18vh, 150px); }
-  .idle-content h1 { font-size: clamp(14px, 5vw, 18px); }
-  .flyer-frame { height: min(42vh, 280px); }
-  .vip-header { font-size: 10px; }
+  .logo-hero { height: clamp(80px, 15vh, 120px); }
+  .idle-content h1 { font-size: 14px; }
+  .flyer-frame { height: min(38vh, 240px); }
+  .vip-header { font-size: 9px; }
+  .vip-hint { font-size: 7px; }
 }
 

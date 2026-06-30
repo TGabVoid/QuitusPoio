@@ -289,7 +289,7 @@ async function loadFlyers() {
     const filtered = [];
     for (const path of normalized.sort(naturalFlyerSort)) {
       // eslint-disable-next-line no-await-in-loop
-      if (await canLoadImage(path)) filtered.push(path);
+      if (await canLoadImage(path, 10000)) filtered.push(path);
     }
 
     return filtered;
@@ -316,12 +316,6 @@ async function loadFlyers() {
   }
 
   return existing.sort(naturalFlyerSort);
-}
-
-// ─── Detección de layout ───
-
-function isMobileLayout() {
-  return window.innerWidth <= 600;
 }
 
 // ─── Indicador de dots ───
@@ -360,26 +354,21 @@ function paintProgress() {
   });
 }
 
-// ─── Seteo de flyers ───
+// ─── Seteo de flyer ───
 
 function setFlyer(index, animate = true) {
   if (!flyers.length || !flyerImage) return;
   flyerIndex = Math.max(0, Math.min(index, flyers.length - 1));
 
-  const urlLeft = flyers[flyerIndex] || null;
-  // En escritorio, mostrar también el siguiente flyer a la derecha (pares consecutivos)
-  const urlRight = (!isMobileLayout() && flyerIndex + 1 < flyers.length) ? (flyers[flyerIndex + 1] || null) : null;
+  const url = flyers[flyerIndex] || null;
 
   const applyImage = () => {
-    flyerImage.src = urlLeft || '';
-    flyerImage.classList.toggle('flyer-pair-hidden', !urlLeft);
-
-    if (urlRight && flyerImage2) {
-      flyerImage2.src = urlRight;
-      flyerImage2.classList.remove('flyer-pair-hidden');
-    } else if (flyerImage2) {
+    flyerImage.src = url || '';
+    flyerImage.style.display = url ? '' : 'none';
+    // Ocultar siempre flyerImage2
+    if (flyerImage2) {
       flyerImage2.removeAttribute("src");
-      flyerImage2.classList.add('flyer-pair-hidden');
+      flyerImage2.style.display = 'none';
     }
   };
 
@@ -388,14 +377,12 @@ function setFlyer(index, animate = true) {
     return;
   }
 
-  // Iniciar transición de salida
+  // Transición
   flyerFrame?.classList.remove('is-transitioning');
   flyerImage.classList.remove('is-transitioning');
-  if (flyerImage2) flyerImage2.classList.remove('is-transitioning');
   void flyerImage.offsetWidth;
   flyerFrame?.classList.add('is-transitioning');
   flyerImage.classList.add('is-transitioning');
-  if (flyerImage2) flyerImage2.classList.add('is-transitioning');
 
   setTimeout(() => {
     applyImage();
@@ -404,17 +391,17 @@ function setFlyer(index, animate = true) {
   setTimeout(() => {
     flyerFrame?.classList.remove('is-transitioning');
     flyerImage.classList.remove('is-transitioning');
-    if (flyerImage2) flyerImage2.classList.remove('is-transitioning');
   }, timings.flyerSwitch);
 }
 
 function clearFlyerImage() {
   if (flyerImage) {
     flyerImage.removeAttribute("src");
+    flyerImage.style.display = 'none';
   }
   if (flyerImage2) {
     flyerImage2.removeAttribute("src");
-    flyerImage2.classList.add('flyer-pair-hidden');
+    flyerImage2.style.display = 'none';
   }
 }
 
@@ -448,7 +435,6 @@ function advanceFlyer(manual = false) {
     scheduleFlyerAuto();
     if (manual) setStatus("Flyer " + (flyerIndex + 1) + " de " + flyers.length);
   } else {
-    // Último flyer: volver a idle
     endVipCycle();
   }
 

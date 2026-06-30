@@ -311,12 +311,12 @@ body {
 }
 
 .flyer-frame {
-  width: min(94vw, 1800px);
+  width: min(94vw, 900px);
   height: min(82vh, 1000px);
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   grid-template-rows: 1fr;
-  gap: 18px;
+  gap: 0;
   justify-items: center;
   align-items: center;
   position: relative;
@@ -506,9 +506,6 @@ body {
   .flyer-frame {
     width: 100%;
     height: min(50vh, 350px);
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr;
-    gap: 0;
   }
   .flyer-frame img { border-radius: 6px; }
   .vip-hint { white-space: normal; max-width: 92vw; font-size: 8px; bottom: 4px; letter-spacing: 0.06em; line-height: 1.2; }

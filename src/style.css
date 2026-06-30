@@ -464,3 +464,57 @@ body {
   .vip-progress { width: min(94vw, 860px); height: 12px; gap: 5px; }
   .flyer-frame { width: min(94vw, 1080px); height: min(72vh, 700px); }
 }
+
+/* Tablet: 601px - 900px */
+@media (max-width: 768px) {
+  .screen-vip { padding: 16px 24px 28px; }
+  .vip-header { font-size: 17px; margin-top: 4px; margin-bottom: 8px; }
+  .vip-progress { width: min(96vw, 700px); height: 10px; gap: 4px; }
+  .flyer-frame { width: min(96vw, 700px); height: min(68vh, 500px); gap: 12px; }
+  .vip-hint { white-space: normal; max-width: 90vw; font-size: clamp(11px, 1.6vw, 14px); }
+  .status { font-size: 13px; padding: 10px 16px; }
+}
+
+/* Mobile grande: 481px - 600px */
+@media (max-width: 600px) {
+  .screen-vip { padding: 12px 14px 22px; }
+  .vip-header { font-size: 15px; margin-top: 2px; margin-bottom: 6px; letter-spacing: 0.16em; }
+  .vip-progress { width: min(98vw, 560px); height: 8px; gap: 3px; padding: 1px 2px; }
+  .flyer-frame { width: min(98vw, 560px); height: min(60vh, 400px); gap: 8px; }
+  .flyer-frame img { border-radius: 10px; }
+  .vip-hint { white-space: normal; max-width: 94vw; font-size: 11px; bottom: clamp(12px, 2vh, 20px); letter-spacing: 0.12em; }
+  .status { font-size: 12px; padding: 8px 14px; letter-spacing: 0.14em; }
+}
+
+/* Móvil pequeño: ≤480px — flyers apilados verticalmente */
+@media (max-width: 480px) {
+  .screen-idle { padding: clamp(12px, 2vh, 20px) clamp(12px, 2vw, 16px) clamp(12px, 1.5vh, 16px); }
+  .idle-content { padding: clamp(12px, 2vh, 20px) clamp(14px, 3vw, 24px); gap: clamp(8px, 1.2vh, 14px); }
+  .logo-hero { height: clamp(160px, 26vh, 280px); max-width: min(88vw, 400px); }
+  .idle-content h1 { font-size: clamp(20px, 7vw, 30px); letter-spacing: 0.1em; }
+  .idle-content p { font-size: clamp(10px, 3vw, 13px); letter-spacing: 0.1em; }
+  .status { font-size: 11px; padding: 6px 12px; letter-spacing: 0.12em; margin: 0 0 clamp(14px, 2vh, 22px); }
+
+  .screen-vip { padding: 8px 10px 16px; }
+  .vip-header { font-size: 13px; margin-top: 2px; margin-bottom: 4px; letter-spacing: 0.12em; }
+  .vip-progress { width: 100%; height: 6px; gap: 2px; padding: 1px; margin: 4px auto 10px; }
+  .flyer-frame {
+    width: 100%;
+    height: min(52vh, 360px);
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 4px;
+  }
+  .flyer-frame img { border-radius: 8px; }
+  .vip-hint { white-space: normal; max-width: 96vw; font-size: 10px; bottom: 10px; letter-spacing: 0.1em; line-height: 1.4; }
+  .vip-main { padding: 6px 0 2px; }
+}
+
+/* Ajuste para pantallas muy pequeñas en vertical (≤360px) */
+@media (max-width: 360px) {
+  .logo-hero { height: clamp(120px, 20vh, 180px); }
+  .idle-content h1 { font-size: clamp(16px, 5.5vw, 22px); letter-spacing: 0.08em; }
+  .flyer-frame { height: min(44vh, 260px); }
+  .vip-header { font-size: 11px; }
+  .vip-hint { font-size: 9px; }
+}

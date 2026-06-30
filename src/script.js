@@ -104,6 +104,14 @@ function setStatus(text) {
   if (nfcStatus) nfcStatus.textContent = text;
 }
 
+function handleNfcBoxClick() {
+  if (!inVip) {
+    handleNfcValue(" ");
+  } else {
+    advanceFlyer(true);
+  }
+}
+
 function applyZoom(level) {
   zoomLevel = Math.min(zoomConfig.max, Math.max(zoomConfig.min, level));
   document.documentElement.style.zoom = String(zoomLevel);
@@ -496,6 +504,10 @@ function forceBackToIdle() {
 }
 
 function startFlow() {
+  if (nfcStatus) {
+    nfcStatus.style.cursor = "pointer";
+    nfcStatus.addEventListener("click", handleNfcBoxClick);
+  }
   showIdle();
 }
 

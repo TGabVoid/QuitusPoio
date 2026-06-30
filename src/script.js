@@ -508,6 +508,18 @@ function startFlow() {
     nfcStatus.style.cursor = "pointer";
     nfcStatus.addEventListener("click", handleNfcBoxClick);
   }
+  if (flyerFrame) {
+    flyerFrame.style.cursor = "pointer";
+    flyerFrame.addEventListener("click", handleNfcBoxClick);
+  }
+  if (flyerImage) {
+    flyerImage.style.cursor = "pointer";
+    flyerImage.addEventListener("click", handleNfcBoxClick);
+  }
+  if (flyerImage2) {
+    flyerImage2.style.cursor = "pointer";
+    flyerImage2.addEventListener("click", handleNfcBoxClick);
+  }
   showIdle();
 }
 

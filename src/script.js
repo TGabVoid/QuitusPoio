@@ -102,7 +102,18 @@ function setStatus(text) {
   if (nfcStatus) nfcStatus.textContent = text;
 }
 
-function handleNfcBoxClick() {
+function handleNfcBoxClick(e) {
+  if (!inVip) {
+    handleNfcValue(" ");
+  } else {
+    e.stopPropagation();
+    advanceFlyer(true);
+  }
+}
+
+function handleImageClick(e) {
+  // Prevenir que el clic en la imagen burbujee al frame y cause doble avance
+  e.stopPropagation();
   if (!inVip) {
     handleNfcValue(" ");
   } else {
@@ -532,21 +543,28 @@ window.addEventListener("resize", () => {
 });
 
 function startFlow() {
-  if (nfcStatus) {
-    nfcStatus.style.cursor = "pointer";
-    nfcStatus.addEventListener("click", handleNfcBoxClick);
-  }
+  // Solo flyerFrame maneja el clic para avanzar en VIP
+  // Las imágenes tienen stopPropagation para no disparar doble
   if (flyerFrame) {
     flyerFrame.style.cursor = "pointer";
     flyerFrame.addEventListener("click", handleNfcBoxClick);
   }
+  // nfcStatus solo para entrar a VIP desde idle
+  if (nfcStatus) {
+    nfcStatus.style.cursor = "pointer";
+    nfcStatus.addEventListener("click", function(e) {
+      if (!inVip) handleNfcValue(" ");
+      else advanceFlyer(true);
+    });
+  }
+  // Imágenes: evitan burbuja, disparan una sola vez
   if (flyerImage) {
     flyerImage.style.cursor = "pointer";
-    flyerImage.addEventListener("click", handleNfcBoxClick);
+    flyerImage.addEventListener("click", handleImageClick);
   }
   if (flyerImage2) {
     flyerImage2.style.cursor = "pointer";
-    flyerImage2.addEventListener("click", handleNfcBoxClick);
+    flyerImage2.addEventListener("click", handleImageClick);
   }
   showIdle();
 }

@@ -295,15 +295,15 @@ async function loadFlyers() {
     const normalized = candidatesFromJson
       .map((p) => String(p).trim())
       .filter(Boolean)
-      .map((p) => (p.startsWith("assets/") ? p : `assets/flyers/${p}`));
+      .map((p) => (p.startsWith("assets/") ? p : `assets/flyers/${p}`))
+      .sort(naturalFlyerSort);
 
-    const filtered = [];
-    for (const path of normalized.sort(naturalFlyerSort)) {
-      // eslint-disable-next-line no-await-in-loop
-      if (await canLoadImage(path, 10000)) filtered.push(path);
-    }
+    // Precarga en paralelo para cache, sin bloquear
+    Promise.allSettled(normalized.map((p) => canLoadImage(p, 8000)))
+      .then(() => logDebug("Precarga de flyers completada"));
+    logDebug("Flyers cargados del JSON: " + normalized.length);
 
-    return filtered;
+    return normalized;
   }
 
   // Fallback

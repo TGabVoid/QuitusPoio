@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VIP Access</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app" id="app">
+    <div class="bg-layer"></div>
+    <div class="particles" aria-hidden="true"></div>
+
+    <section class="screen screen-idle is-active" id="screenIdle" aria-hidden="false">
+      <main class="idle-content">
+        <header class="brand brand-centered">
+          <img src="assets/pollon.png" alt="Marca VIP" class="logo logo-hero">
+        </header>
+        <h1>ACERQUE SU TARJETA VIP</h1>
+        <p>Acceso a beneficios exclusivos</p>
+      </main>
+      <div class="status" id="nfcStatus">Esperando tarjeta...</div>
+    </section>
+
+    <section class="screen screen-vip" id="screenVip" aria-hidden="true">
+      <header class="vip-header">MENU EXCLUSIVO VIP</header>
+      <div class="vip-progress" id="vipProgress" aria-hidden="true"></div>
+      <main class="vip-main">
+        <div class="vip-accents" aria-hidden="true"></div>
+        <div class="flyer-frame" id="flyerFrame">
+          <span class="flyer-glow" aria-hidden="true"></span>
+          <img id="flyerImage" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Flyer VIP">
+          <img id="flyerImage2" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Flyer VIP 2" class="flyer-pair-hidden">
+        </div>
+      </main>
+
+      <div class="vip-hint" id="vipHint">Pase su tarjeta VIP nuevamente para ver el siguiente menú especial</div>
+    </section>
+
+
+    <div class="transition-overlay" id="transitionOverlay" aria-hidden="true"></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

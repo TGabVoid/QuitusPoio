@@ -1,0 +1,35 @@
+{
+  "build": {
+    "beforeDevCommand": "",
+    "beforeBuildCommand": "",
+    "devPath": "../src/index.html",
+    "distDir": "../src"
+  },
+  "package": {
+    "productName": "VIPDisplay",
+    "version": "1.0.5"
+  },
+  "tauri": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "VIPDisplay",
+        "fullscreen": true,
+        "decorations": false,
+        "resizable": true,
+        "transparent": false,
+        "alwaysOnTop": true
+      }
+    ],
+    "bundle": {
+      "active": true,
+      "targets": ["nsis"],
+      "identifier": "com.vip.display",
+      "icon": ["icons/icon.ico"],
+      "resources": []
+    },
+    "security": {
+      "csp": null
+    }
+  }
+}

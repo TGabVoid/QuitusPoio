@@ -1,0 +1,18 @@
+[package]
+name = "vip_display"
+version = "1.0.0"
+description = "VIP Display"
+authors = ["you"]
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "1.5", features = [] }
+
+[dependencies]
+tauri = { version = "1.6", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+base64 = "0.21"
+
+[features]
+custom-protocol = ["tauri/custom-protocol"]

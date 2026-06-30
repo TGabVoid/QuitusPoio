@@ -1,0 +1,15 @@
+{
+  "name": "vip-display",
+  "private": true,
+  "version": "1.0.5",
+  "description": "VIP Display Tauri app",
+  "main": "index.html",
+  "scripts": {
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^1.6.0"
+  }
+}

@@ -324,31 +324,19 @@ function isMobileLayout() {
   return window.innerWidth <= 600;
 }
 
-function usePairLayout() {
-  // Pares (2 flyers lado a lado) solo en escritorio con más de 5 flyers
-  return !isMobileLayout() && flyers.length > 5;
-}
-
-function totalSections() {
-  if (usePairLayout()) {
-    return Math.ceil(flyers.length / 2);
-  }
-  return flyers.length;
-}
-
 // ─── Indicador de dots ───
 
 function buildProgress() {
   if (!vipProgress) return;
   vipProgress.innerHTML = "";
-  const sections = totalSections();
+  const count = flyers.length;
   vipProgress.className = "vip-progress vip-progress-dots";
-  if (sections <= 1) vipProgress.classList.add("single");
+  if (count <= 1) vipProgress.classList.add("single");
 
-  for (let i = 0; i < sections; i++) {
+  for (let i = 0; i < count; i++) {
     const dot = document.createElement("button");
     dot.className = "vip-progress-dot";
-    dot.setAttribute("aria-label", "Sección " + (i + 1));
+    dot.setAttribute("aria-label", "Flyer " + (i + 1));
     dot.dataset.index = String(i);
     dot.addEventListener("click", () => {
       if (!inVip || !vipReady) return;
@@ -356,7 +344,7 @@ function buildProgress() {
       setFlyer(i, true);
       paintProgress();
       scheduleFlyerAuto();
-      setStatus("Navegación VIP manual");
+      setStatus("Flyer " + (i + 1) + " de " + flyers.length);
     });
     vipProgress.appendChild(dot);
   }
@@ -376,62 +364,50 @@ function paintProgress() {
 
 function setFlyer(index, animate = true) {
   if (!flyers.length || !flyerImage) return;
-  flyerIndex = Math.max(0, Math.min(index, totalSections() - 1));
+  flyerIndex = Math.max(0, Math.min(index, flyers.length - 1));
 
-  const pairs = usePairLayout();
-  const url1 = pairs ? (flyers[flyerIndex * 2] || null) : (flyers[flyerIndex] || null);
-  const url2 = pairs ? (flyers[flyerIndex * 2 + 1] || null) : null;
+  const url = flyers[flyerIndex] || null;
 
-  const applyPair = () => {
-    if (pairs) {
-      // Escritorio con >5 flyers: 2 imágenes lado a lado
-      if (url1) {
-        flyerImage.src = url1;
-        flyerImage.classList.remove('flyer-pair-hidden');
-      } else {
-        flyerImage.classList.add('flyer-pair-hidden');
-      }
-      if (url2) {
-        flyerImage2.src = url2;
-        flyerImage2.classList.remove('flyer-pair-hidden');
-      } else {
-        flyerImage2.classList.add('flyer-pair-hidden');
-      }
-    } else {
-      // 1 flyer centrado (móvil o ≤5 flyers en escritorio)
-      flyerImage.src = url1 || '';
-      flyerImage.classList.toggle('flyer-pair-hidden', !url1);
+  const applyImage = () => {
+    flyerImage.src = url || '';
+    flyerImage.classList.toggle('flyer-pair-hidden', !url);
+    // Siempre ocultar la segunda imagen
+    if (flyerImage2) {
+      flyerImage2.removeAttribute("src");
       flyerImage2.classList.add('flyer-pair-hidden');
     }
   };
 
   if (!animate) {
-    applyPair();
+    applyImage();
     return;
   }
 
+  // Iniciar transición de salida
   flyerFrame?.classList.remove('is-transitioning');
   flyerImage.classList.remove('is-transitioning');
-  flyerImage2.classList.remove('is-transitioning');
+  if (flyerImage2) flyerImage2.classList.remove('is-transitioning');
   void flyerImage.offsetWidth;
   flyerFrame?.classList.add('is-transitioning');
   flyerImage.classList.add('is-transitioning');
-  flyerImage2.classList.add('is-transitioning');
 
   setTimeout(() => {
-    applyPair();
+    applyImage();
   }, 220);
 
   setTimeout(() => {
     flyerFrame?.classList.remove('is-transitioning');
     flyerImage.classList.remove('is-transitioning');
-    flyerImage2.classList.remove('is-transitioning');
   }, timings.flyerSwitch);
 }
 
 function clearFlyerImage() {
   if (flyerImage) {
     flyerImage.removeAttribute("src");
+  }
+  if (flyerImage2) {
+    flyerImage2.removeAttribute("src");
+    flyerImage2.classList.add('flyer-pair-hidden');
   }
 }
 
@@ -454,20 +430,24 @@ function scheduleFlyerAuto() {
 function advanceFlyer(manual = false) {
   if (!inVip || !vipReady) return;
 
-  if (totalSections() <= 1) {
+  if (flyers.length <= 1) {
     endVipCycle();
     return;
   }
 
-  if (flyerIndex < totalSections() - 1) {
+  if (flyerIndex < flyers.length - 1) {
     setFlyer(flyerIndex + 1, true);
     scheduleProgressPaint();
     scheduleFlyerAuto();
+    if (manual) setStatus("Flyer " + (flyerIndex + 1) + " de " + flyers.length);
   } else {
+    // Último flyer: volver a idle
     endVipCycle();
   }
 
-  if (manual) setStatus("Navegación VIP manual");
+  if (manual && flyerIndex < flyers.length) {
+    setStatus("Flyer " + (flyerIndex + 1) + " de " + flyers.length);
+  }
 }
 
 function endVipCycle() {
@@ -481,7 +461,7 @@ function endVipCycle() {
 
 function updateVipHintVisibility() {
   if (!vipHint) return;
-  vipHint.style.display = totalSections() > 1 ? "block" : "none";
+  vipHint.style.display = flyers.length > 1 ? "block" : "none";
 }
 
 async function startVipSequence() {

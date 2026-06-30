@@ -311,12 +311,12 @@ body {
 }
 
 .flyer-frame {
-  width: min(94vw, 1800px);
+  width: min(94vw, 900px);
   height: min(82vh, 1000px);
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   grid-template-rows: 1fr;
-  gap: 18px;
+  gap: 0;
   justify-items: center;
   align-items: center;
   position: relative;
@@ -486,7 +486,7 @@ body {
   .screen-vip { padding: 16px 24px 28px; }
   .vip-header { font-size: 17px; margin-top: 4px; margin-bottom: 8px; }
   .vip-progress { width: min(96vw, 700px); height: 10px; gap: 4px; }
-  .flyer-frame { width: min(96vw, 700px); height: min(68vh, 500px); gap: 12px; }
+  .flyer-frame { width: min(96vw, 700px); height: min(68vh, 500px); }
   .vip-hint { white-space: normal; max-width: 90vw; font-size: clamp(11px, 1.6vw, 14px); }
   .status { font-size: 13px; padding: 10px 16px; }
 }
@@ -506,9 +506,6 @@ body {
   .flyer-frame {
     width: 100%;
     height: min(50vh, 350px);
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr;
-    gap: 0;
   }
   .flyer-frame img { border-radius: 6px; }
   .vip-hint { white-space: normal; max-width: 92vw; font-size: 8px; bottom: 4px; letter-spacing: 0.06em; line-height: 1.2; }

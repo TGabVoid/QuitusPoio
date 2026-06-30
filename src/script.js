@@ -281,41 +281,25 @@ async function loadFlyers() {
     .catch(() => null);
 
   if (Array.isArray(candidatesFromJson) && candidatesFromJson.length) {
+    // Cargar todos los flyers del JSON sin filtrar — el navegador los carga bajo demanda
     const normalized = candidatesFromJson
       .map((p) => String(p).trim())
       .filter(Boolean)
       .map((p) => (p.startsWith("assets/") ? p : `assets/flyers/${p}`));
 
-    const filtered = [];
-    for (const path of normalized.sort(naturalFlyerSort)) {
-      // eslint-disable-next-line no-await-in-loop
-      if (await canLoadImage(path, 10000)) filtered.push(path);
-    }
-
-    return filtered;
+    logDebug(`Flyers cargados del JSON: ${normalized.length}`);
+    return normalized.sort(naturalFlyerSort);
   }
 
-  // Fallback
-  const exts = ["jpg", "jpeg", "png", "webp"];
+  // Fallback: buscar archivos del 1 al 12
   const max = 12;
   const candidates = [];
   for (let i = 1; i <= max; i += 1) {
-    for (const ext of exts) candidates.push(`assets/flyers/flyer${i}.${ext}`);
+    candidates.push(`assets/flyers/flyer${i}.jpg`);
   }
 
-  const existing = [];
-  for (const path of candidates) {
-    // eslint-disable-next-line no-await-in-loop
-    const ok = await canLoadImage(path);
-    if (ok) existing.push(path);
-  }
-
-  if (!existing.length) {
-    const fallback = "assets/flyers/flyer2.jpg";
-    if (await canLoadImage(fallback)) return [fallback];
-  }
-
-  return existing.sort(naturalFlyerSort);
+  logDebug(`Fallback: ${candidates.length} candidatos`);
+  return candidates.sort(naturalFlyerSort);
 }
 
 // ─── Indicador de dots ───

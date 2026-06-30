@@ -281,25 +281,41 @@ async function loadFlyers() {
     .catch(() => null);
 
   if (Array.isArray(candidatesFromJson) && candidatesFromJson.length) {
-    // Cargar todos los flyers del JSON sin filtrar — el navegador los carga bajo demanda
     const normalized = candidatesFromJson
       .map((p) => String(p).trim())
       .filter(Boolean)
       .map((p) => (p.startsWith("assets/") ? p : `assets/flyers/${p}`));
 
-    logDebug(`Flyers cargados del JSON: ${normalized.length}`);
-    return normalized.sort(naturalFlyerSort);
+    const filtered = [];
+    for (const path of normalized.sort(naturalFlyerSort)) {
+      // eslint-disable-next-line no-await-in-loop
+      if (await canLoadImage(path, 10000)) filtered.push(path);
+    }
+
+    return filtered;
   }
 
-  // Fallback: buscar archivos del 1 al 12
+  // Fallback
+  const exts = ["jpg", "jpeg", "png", "webp"];
   const max = 12;
   const candidates = [];
   for (let i = 1; i <= max; i += 1) {
-    candidates.push(`assets/flyers/flyer${i}.jpg`);
+    for (const ext of exts) candidates.push(`assets/flyers/flyer${i}.${ext}`);
   }
 
-  logDebug(`Fallback: ${candidates.length} candidatos`);
-  return candidates.sort(naturalFlyerSort);
+  const existing = [];
+  for (const path of candidates) {
+    // eslint-disable-next-line no-await-in-loop
+    const ok = await canLoadImage(path);
+    if (ok) existing.push(path);
+  }
+
+  if (!existing.length) {
+    const fallback = "assets/flyers/flyer2.jpg";
+    if (await canLoadImage(fallback)) return [fallback];
+  }
+
+  return existing.sort(naturalFlyerSort);
 }
 
 // ─── Indicador de dots ───
@@ -307,14 +323,14 @@ async function loadFlyers() {
 function buildProgress() {
   if (!vipProgress) return;
   vipProgress.innerHTML = "";
-  const count = flyers.length;
+  const sections = Math.ceil(flyers.length / 2);
   vipProgress.className = "vip-progress vip-progress-dots";
-  if (count <= 1) vipProgress.classList.add("single");
+  if (sections <= 1) vipProgress.classList.add("single");
 
-  for (let i = 0; i < count; i++) {
+  for (let i = 0; i < sections; i++) {
     const dot = document.createElement("button");
     dot.className = "vip-progress-dot";
-    dot.setAttribute("aria-label", "Flyer " + (i + 1));
+    dot.setAttribute("aria-label", "Par " + (i + 1));
     dot.dataset.index = String(i);
     dot.addEventListener("click", () => {
       if (!inVip || !vipReady) return;
@@ -322,7 +338,7 @@ function buildProgress() {
       setFlyer(i, true);
       paintProgress();
       scheduleFlyerAuto();
-      setStatus("Flyer " + (i + 1) + " de " + flyers.length);
+      setStatus("Par " + (i + 1) + " de " + sections);
     });
     vipProgress.appendChild(dot);
   }
@@ -338,43 +354,51 @@ function paintProgress() {
   });
 }
 
-// ─── Seteo de flyer ───
+// ─── Seteo de flyers (siempre 2 por slide) ───
 
 function setFlyer(index, animate = true) {
   if (!flyers.length || !flyerImage) return;
-  flyerIndex = Math.max(0, Math.min(index, flyers.length - 1));
+  const sections = Math.ceil(flyers.length / 2);
+  flyerIndex = Math.max(0, Math.min(index, sections - 1));
 
-  const url = flyers[flyerIndex] || null;
+  const urlLeft = flyers[flyerIndex * 2] || null;
+  const urlRight = flyers[flyerIndex * 2 + 1] || null;
 
-  const applyImage = () => {
-    flyerImage.src = url || '';
-    flyerImage.style.display = url ? '' : 'none';
-    // Ocultar siempre flyerImage2
-    if (flyerImage2) {
+  const applyPair = () => {
+    flyerImage.src = urlLeft || '';
+    flyerImage.style.display = urlLeft ? '' : 'none';
+
+    if (urlRight && flyerImage2) {
+      flyerImage2.src = urlRight;
+      flyerImage2.style.display = '';
+    } else if (flyerImage2) {
       flyerImage2.removeAttribute("src");
       flyerImage2.style.display = 'none';
     }
   };
 
   if (!animate) {
-    applyImage();
+    applyPair();
     return;
   }
 
   // Transición
   flyerFrame?.classList.remove('is-transitioning');
   flyerImage.classList.remove('is-transitioning');
+  if (flyerImage2) flyerImage2.classList.remove('is-transitioning');
   void flyerImage.offsetWidth;
   flyerFrame?.classList.add('is-transitioning');
   flyerImage.classList.add('is-transitioning');
+  if (flyerImage2) flyerImage2.classList.add('is-transitioning');
 
   setTimeout(() => {
-    applyImage();
+    applyPair();
   }, 220);
 
   setTimeout(() => {
     flyerFrame?.classList.remove('is-transitioning');
     flyerImage.classList.remove('is-transitioning');
+    if (flyerImage2) flyerImage2.classList.remove('is-transitioning');
   }, timings.flyerSwitch);
 }
 
@@ -408,22 +432,24 @@ function scheduleFlyerAuto() {
 function advanceFlyer(manual = false) {
   if (!inVip || !vipReady) return;
 
-  if (flyers.length <= 1) {
+  const sections = Math.ceil(flyers.length / 2);
+
+  if (sections <= 1) {
     endVipCycle();
     return;
   }
 
-  if (flyerIndex < flyers.length - 1) {
+  if (flyerIndex < sections - 1) {
     setFlyer(flyerIndex + 1, true);
     scheduleProgressPaint();
     scheduleFlyerAuto();
-    if (manual) setStatus("Flyer " + (flyerIndex + 1) + " de " + flyers.length);
+    if (manual) setStatus("Par " + (flyerIndex + 1) + " de " + sections);
   } else {
     endVipCycle();
   }
 
-  if (manual && flyerIndex < flyers.length) {
-    setStatus("Flyer " + (flyerIndex + 1) + " de " + flyers.length);
+  if (manual && flyerIndex < sections) {
+    setStatus("Par " + (flyerIndex + 1) + " de " + sections);
   }
 }
 
@@ -438,7 +464,8 @@ function endVipCycle() {
 
 function updateVipHintVisibility() {
   if (!vipHint) return;
-  vipHint.style.display = flyers.length > 1 ? "block" : "none";
+  const sections = Math.ceil(flyers.length / 2);
+  vipHint.style.display = sections > 1 ? "block" : "none";
 }
 
 async function startVipSequence() {
